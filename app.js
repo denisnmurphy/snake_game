@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded',() => {
   const squares = document.querySelectorAll('.grid div')
   const scoreDisplay = document.querySelector('span')
-  const sttartBtn = document.querySelector('.start')
+  const startBtn = document.querySelector('.start')
 
   const width = 10
   let currentIndex = 0
@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded',() => {
 // to start and restart the game
 
 function startGame(){
+  console.log('works')
   currentSnake.forEach(index => squares[index].classList.remove('snake'))
   squares[appleIndex].classList.remove('apple')
   clearInterval(interval)
@@ -33,6 +34,52 @@ function startGame(){
 
 }
 
+// function that deals with all the outcomes of snake
+function moveOutcomes(){
+
+// deals with Snake hitting border and self
+if (
+  (currentSnake[0] + width >= (width * width) && direction === width) || // if snake hits bottom
+  (currentSnake[0] % width === width -1 && direction === 1) || // if snake hits right wall
+  (currentSnake[0] % width === 0 && direction === -1) || // if snake hits left wall
+  (currentSnake[0] - width < 0  && direction === - width) || // if snake hits top wall
+  squares[currentSnake[0]+direction].classList.contains('snake') // if snake goes into itself
+
+){
+  return clearInterval(interval) // this will clear the interval if any of the above happens
+}
+
+const tail = currentSnake.pop()
+squares[tail].classList.remove('snake') // removes class of Snake from the tail
+currentSnake.unshift(currentSnake[0] + direction) // gives direction to the head of the array
+
+
+// deals with snake getting apple
+
+if(squares[currentSnake[0]].classList.contains('apple')){
+  squares[currentSnake[0]].classList.remove('apple')
+  squares[tail].classList.add('snake')
+  currentSnake.push(tail)
+  randomApple()
+  score ++
+  scoreDisplay.textContent = score
+  clearInterval(interval)
+  intervalTime = intervalTime * speed
+  interval = setInterval(moveOutcomes, intervalTime)
+}
+squares[currentSnake[0]].classList.add('snake')
+}
+
+// generate new random apple once apple is eaten
+
+function randomApple(){
+
+  do{
+    appleIndex = Math.floor(Math.random() * squares.length)
+
+  } while(squares[appleIndex].classList.contains('snake')) // make sure apple dosen't appear in snake square
+  squares[appleIndex].classList.add('apple')
+}
 
 // assign functions to keycodes
 
@@ -45,12 +92,13 @@ function control(e){
   } else if (e.keyCode === 38){
     direction = - width
   }else if (e.keyCode === 37){
-    direction - 1
+    direction = - 1
   }else if (e.keyCode === 40){
     direction = + width
   }
 }
 
 document.addEventListener('keyup', control)
+startBtn.addEventListener('click', startGame)
 
 })
